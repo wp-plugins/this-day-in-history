@@ -1,6 +1,6 @@
 === This Day In History ===
 Contributors: BrokenCrust
-Tags: history, today in history, on this day, this day in histroy, widget
+Tags: history, today in history, on this day, this day in history, widget
 Requires at least: 3.3
 Tested up to: 3.3.1
 Stable tag: 0.2
