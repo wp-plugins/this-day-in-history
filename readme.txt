@@ -3,7 +3,7 @@ Contributors: BrokenCrust
 Tags: history, today in history, on this day, this day in history, widget
 Requires at least: 3.3
 Tested up to: 3.3.1
-Stable tag: 0.2
+Stable tag: 0.3
 License: GPLv2 or later
 
 This is a This Day In History management plugin and widget which you can use to enter and display historic events.
@@ -26,10 +26,13 @@ Installing is pretty easy takes only a minute or two.
 
 4. Add this widget, to your themes widget display areas, select a title and click Save.
 
-5. Enter historic events via the new 'Historic Events' admin page.  These will be automatically displayed by the widget on the anniversary of the day that they occured.
+5. Enter historic events via the new 'Historic Events' admin page.  These will be automatically displayed by the widget on the anniversary of the day that they occurred.
 
 
 == Changelog ==
+
+= 0.3 =
+* Fix for miserable magic quotes
 
 = 0.2 =
 * Name changed from Today In History

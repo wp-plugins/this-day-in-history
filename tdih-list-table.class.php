@@ -77,14 +77,14 @@ class TDIH_List_Table extends WP_List_Table {
 				check_admin_referer('this_day_in_history');
 
 				$event_date = $_POST['event_date'];
-				$event_name = $_POST['event_name'];
+				$event_name = stripslashes($_POST['event_name']);
 
 				$error = $this->validate_event($event_date, $event_name);
 
 				if ($error) {
 					wp_die ($error, 'Error', array("back_link" => true));
 				} else {
-					$data = array('event_date' => $_POST['event_date'], 'event_name' => $_POST['event_name']);
+					$data = array('event_date' => $event_date, 'event_name' => $event_name);
 					$result = $wpdb->insert($wpdb->prefix.'tdih_events', $data, array('%s', '%s'));
 				}
 
@@ -136,7 +136,7 @@ class TDIH_List_Table extends WP_List_Table {
 
 				$id = (int) $_POST['id'];
 				$event_date = $_POST['event_date'];
-				$event_name = $_POST['event_name'];
+				$event_name = stripslashes($_POST['event_name']);
 
 				$error = $this->validate_event($event_date, $event_name);
 
