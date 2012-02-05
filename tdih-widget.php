@@ -13,8 +13,8 @@ class ThisDayInHistoryWidget extends WP_Widget {
 		extract($args, EXTR_SKIP);
 
 		$title = apply_filters('widget_title', empty($instance['title']) ? __('This Day In History', 'tdih') : $instance['title'], $instance, $this->id_base);
-
-		$today = getdate();
+		
+		$today = getdate(current_time('timestamp'));
 
 		$day = $today['mday'].'-'.$today['mon'];
 
