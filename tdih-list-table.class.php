@@ -115,7 +115,7 @@ class TDIH_List_Table extends WP_List_Table {
 								</div>
 								<div class="form-field form-required">
 									<label for="event_name"><?php _e('Event Date', 'tdih'); ?></label>
-									<input name="event_name" id="event_name" size="120" maxlength="255" value="<?php echo $event->event_name; ?>" aria-required="true" type="text">
+									<input name="event_name" id="event_name" size="120" maxlength="255" value="<?php echo esc_html($event->event_name); ?>" aria-required="true" type="text">
 									<p><?php _e('The name of the event.', 'tdih'); ?></p>
 								</div>
 								<p class="submit">
