@@ -34,7 +34,7 @@ Installing is pretty easy takes only a minute or two.
 = 0.6 =
 * Added options page
 * Added option for events per page and date format
-* Removed 255 charater limit for event names
+* Removed 255 character limit for event names
 * Change event name input to a textarea
 * Some minor html bug fixes
 
