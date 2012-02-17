@@ -41,7 +41,9 @@ class tdih_init {
 
 		dbDelta($sql);
 
-		add_option("tdih_db_version", $tdih_db_version);
+		add_option('tdih_db_version', $tdih_db_version);
+		
+		add_option('tdih_options', array('date_format'=>'%Y-%m-%d', 'per_page' => '10'));
 		
 		$role = get_role('administrator');
 

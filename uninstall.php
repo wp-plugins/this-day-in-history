@@ -12,6 +12,7 @@ if (!defined('WP_UNINSTALL_PLUGIN') || !WP_UNINSTALL_PLUGIN || dirname(WP_UNINST
 
 	// Delete the options
 	delete_option("tdih_db_version");
+	delete_option("tdih_options");
 
 	// Remove the capacity
 	$role = get_role('administrator');

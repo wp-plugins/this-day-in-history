@@ -5,9 +5,23 @@ if(!class_exists('WP_List_Table')){ require_once(ABSPATH.'wp-admin/includes/clas
 class TDIH_List_Table extends WP_List_Table {
 
 	public $show_main_section = true;
+	
+	private $date_format;
+	
+	private $date_description;
+	
+	private $per_page;
 
 	public function __construct(){
 		global $status, $page;
+
+		$options = get_option('tdih_options');
+		
+		$this->date_format = $options['date_format'];
+		
+		$this->date_description = $this->tdih_date();
+		
+		$this->per_page = $options['per_page'];
 
 		parent::__construct( array(
 			'singular' => 'event',
@@ -68,7 +82,7 @@ class TDIH_List_Table extends WP_List_Table {
 
 	private function process_bulk_action() {
 		global $wpdb;
-
+		
 		$this->show_main_section = true;
 
 		switch($this->current_action()){
@@ -76,7 +90,7 @@ class TDIH_List_Table extends WP_List_Table {
 			case 'add':
 				check_admin_referer('this_day_in_history');
 
-				$event_date = $_POST['event_date'];
+				$event_date = $this->date_reorder($_POST['event_date']);
 				$event_name = stripslashes($_POST['event_name']);
 
 				$error = $this->validate_event($event_date, $event_name);
@@ -93,7 +107,7 @@ class TDIH_List_Table extends WP_List_Table {
 			case 'edit':
 				$id = (int) $_GET['id'];
 
-				$event = $wpdb->get_row("SELECT event_date, event_name FROM ".$wpdb->prefix."tdih_events WHERE id=".$id);
+				$event = $wpdb->get_row("SELECT DATE_FORMAT(event_date, '".$this->date_format."') as event_date, event_name FROM ".$wpdb->prefix."tdih_events WHERE id=".$id);
 
 				?>
 
@@ -110,12 +124,12 @@ class TDIH_List_Table extends WP_List_Table {
 								<?php wp_nonce_field('this_day_in_history_edit'); ?>
 								<div class="form-field form-required">
 									<label for="event_date"><?php _e('Event Date', 'tdih'); ?></label>
-									<input name="event_date" id="event_date" value="<?php echo $event->event_date; ?>" aria-required="true" type="date">
-									<p><?php _e('The date the event occured (enter date in YYYY-MM-DD format).', 'tdih'); ?></p>
+									<input type="date" name="event_date" id="event_date" value="<?php echo $event->event_date; ?>" required="required" />
+									<p><?php printf(__('The date the event occured (enter date in %s format).', 'tdih'), $this->date_description); ?></p>
 								</div>
 								<div class="form-field form-required">
 									<label for="event_name"><?php _e('Event Date', 'tdih'); ?></label>
-									<input name="event_name" id="event_name" size="120" maxlength="255" value="<?php echo esc_html($event->event_name); ?>" aria-required="true" type="text">
+									<textarea id="event_name" name="event_name" rows="3" cols="20" required="required"><?php echo esc_html($event->event_name); ?></textarea>
 									<p><?php _e('The name of the event.', 'tdih'); ?></p>
 								</div>
 								<p class="submit">
@@ -135,7 +149,7 @@ class TDIH_List_Table extends WP_List_Table {
 				check_admin_referer('this_day_in_history_edit');
 
 				$id = (int) $_POST['id'];
-				$event_date = $_POST['event_date'];
+				$event_date = $this->date_reorder($_POST['event_date']);
 				$event_name = stripslashes($_POST['event_name']);
 
 				$error = $this->validate_event($event_date, $event_name);
@@ -170,17 +184,18 @@ class TDIH_List_Table extends WP_List_Table {
 		$error = false;
 
 		if (empty($event_date)) {
-			$error = "<h3>Missing Event Date</h3><p>You must enter a date for the event.</p>";
+			$error = '<h3>'. __('Missing Event Date', 'tdih') .'</h3><p>'.  __('You must enter a date for the event.', 'tdih') .'</p>';
 		} else if (empty($event_name)) {
-			$error = "<h3>Missing Event Name</h3><p>You must enter a name for the event.</p>";
+			$error = '<h3>'. __('Missing Event Name', 'tdih') .'</h3><p>'. __('You must enter a name for the event.', 'tdih') .'</p>';
 		} else if (!$this->date_check($event_date)) {
-			$error = "<h3>Invalid Event Date</h3><p>Please enter dates in the format YYYY-MM-DD.</p>";
+			$error = '<h3>'. __('Invalid Event Date', 'tdih') .'</h3><p>'. $event_date.sprintf(__('Please enter dates in the format %s.', 'tdih'), $this->date_description) .'</p>';
 		}
 
 		return $error;
 	}
 
 	private function date_check($date) {
+		
 		if (preg_match("/^(\d{4})-(\d{2})-(\d{2})$/", $date, $matches)) {
 			if (checkdate($matches[2], $matches[3], $matches[1])) {
 				return true;
@@ -190,6 +205,45 @@ class TDIH_List_Table extends WP_List_Table {
 		return false;
 	}
 
+	private function date_reorder($date) {
+				
+		switch ($this->date_format) {
+		
+			case '%m-%d-%Y':
+				if (preg_match("/^(\d{2})-(\d{2})-(\d{4})$/", $date, $matches)) {
+					return $matches[3].'-'.$matches[1].'-'.$matches[2];
+				}
+				break;
+				
+			case '%d-%m-%Y':
+				if (preg_match("/^(\d{2})-(\d{2})-(\d{4})$/", $date, $matches)) {
+					return $matches[3].'-'.$matches[2].'-'.$matches[1];
+				}
+				break;
+		}
+	    	
+		return $date;
+	}	    	
+
+	private function tdih_date() {
+			
+		switch ($this->date_format) {
+	
+		case '%m-%d-%Y':
+	    		$format = 'MM-DD-YYYY';
+	    		break;
+	
+		case '%d-%m-%Y':
+	    		$format = 'DD-MM-YYYY';
+	    		break;
+	
+		default:
+	    		$format = 'YYYY-MM-DD';
+		}
+	
+		return $format;
+	}
+	
 	public function pagination( $which ) {
 		if ( empty( $this->_pagination_args ) )
 			return;
@@ -326,7 +380,7 @@ class TDIH_List_Table extends WP_List_Table {
 	public function prepare_items() {
 		global $wpdb;
 
-		$per_page = 10;
+		$per_page = $this->per_page;
 
 		$columns = $this->get_columns();
 		$hidden = array();
@@ -342,7 +396,7 @@ class TDIH_List_Table extends WP_List_Table {
 
 		$where = (!empty($_REQUEST['s'])) ? "WHERE (event_date LIKE '%".like_escape($_REQUEST['s'])."%') OR (event_name LIKE '%".like_escape($_REQUEST['s'])."%')" : '';
 
-		$events = $wpdb->get_results("SELECT * FROM ".$wpdb->prefix."tdih_events ".$where." ORDER BY ".$orderby." ".$order);
+		$events = $wpdb->get_results("SELECT id, DATE_FORMAT(event_date, '".$this->date_format."') as event_date, event_name FROM ".$wpdb->prefix."tdih_events ".$where." ORDER BY ".$orderby." ".$order);
 
 		$current_page = $this->get_pagenum();
 

@@ -3,7 +3,7 @@ Contributors: BrokenCrust
 Tags: history, today in history, on this day, this day in history, widget
 Requires at least: 3.3
 Tested up to: 3.3.1
-Stable tag: 0.5
+Stable tag: 0.6
 License: GPLv2 or later
 
 This is a This Day In History management plugin and widget which you can use to enter and display historic events.
@@ -30,6 +30,13 @@ Installing is pretty easy takes only a minute or two.
 
 
 == Changelog ==
+
+= 0.6 =
+* Added options page
+* Added option for events per page and date format
+* Removed 255 charater limit for event names
+* Change event name input to a textarea
+* Some minor html bug fixes
 
 = 0.5 =
 * Fix for editing entries with double quotes (like some html code) - more magic quotes misery
