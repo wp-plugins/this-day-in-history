@@ -1,0 +1,14 @@
+/**********************************************
+  This Day In History Plugin CSS for WordPress
+***********************************************
+  Copyright (c) 2011
+
+  $Revision: 0.3 $
+  $Author: BrokenCrust $
+  $Date: 2012/01/16 $
+
+***********************************************/
+
+#tdih_icon { background: transparent url('../images/tdih_admin_icon.png') no-repeat; }
+
+.column-event_date { width: 120px; }
