@@ -5,22 +5,22 @@ if(!class_exists('WP_List_Table')){ require_once(ABSPATH.'wp-admin/includes/clas
 class TDIH_List_Table extends WP_List_Table {
 
 	public $show_main_section = true;
-	
+
 	private $date_format;
-	
+
 	private $date_description;
-	
+
 	private $per_page;
 
 	public function __construct(){
 		global $status, $page;
 
 		$options = get_option('tdih_options');
-		
+
 		$this->date_format = $options['date_format'];
-		
+
 		$this->date_description = $this->tdih_date();
-		
+
 		$this->per_page = $options['per_page'];
 
 		parent::__construct( array(
@@ -33,7 +33,9 @@ class TDIH_List_Table extends WP_List_Table {
 	public function column_default($item, $column_name){
 		switch($column_name){
 			case 'event_name':
-				return $item->$column_name;
+				return $item->event_name;
+			case 'event_type':
+				return $item->event_type === NULL ? '<span class="tdih_none">'.__('- none -', 'tdih').'</span>' : '<a href="admin.php?page=this-day-in-history&type='.$item->event_slug.'">'.$item->event_type.'</a>';
 			default:
 				return print_r($item, true);
 		}
@@ -42,15 +44,15 @@ class TDIH_List_Table extends WP_List_Table {
 	public function column_event_date($item){
 
 		$actions = array(
-			'edit'   => sprintf('<a href="?page=%s&action=%s&id=%s">Edit</a>', $_REQUEST['page'], 'edit', $item->id),
-			'delete' => sprintf('<a href="?page=%s&action=%s&id=%s">Delete</a>', $_REQUEST['page'], 'delete', $item->id),
+			'edit'   => sprintf('<a href="?page=%s&action=%s&id=%s">Edit</a>', $_REQUEST['page'], 'edit', $item->ID),
+			'delete' => sprintf('<a href="?page=%s&action=%s&id=%s">Delete</a>', $_REQUEST['page'], 'delete', $item->ID),
 		);
 
 		return sprintf('%1$s %2$s', $item->event_date, $this->row_actions($actions));
 	}
 
 	public function column_cb($item){
-		return sprintf('<input type="checkbox" name="%1$s[]" value="%2$s" />', $this->_args['singular'], $item->id);
+		return sprintf('<input type="checkbox" name="%1$s[]" value="%2$s" />', $this->_args['singular'], $item->ID);
 	}
 
 	public function get_columns(){
@@ -58,7 +60,8 @@ class TDIH_List_Table extends WP_List_Table {
 		$columns = array(
 			'cb'         => '<input type="checkbox" />',
 			'event_date' => 'Event Date',
-			'event_name' => 'Event Name'
+			'event_name' => 'Event Name',
+			'event_type' => 'Event Type'
 		);
 		return $columns;
 	}
@@ -67,7 +70,8 @@ class TDIH_List_Table extends WP_List_Table {
 
 		$sortable_columns = array(
 			'event_date' => array('event_date', false),
-			'event_name' => array('event_name', false)
+			'event_name' => array('event_name', false),
+			'event_type' => array('event_type', false)
 		);
 		return $sortable_columns;
 	}
@@ -82,7 +86,7 @@ class TDIH_List_Table extends WP_List_Table {
 
 	private function process_bulk_action() {
 		global $wpdb;
-		
+
 		$this->show_main_section = true;
 
 		switch($this->current_action()){
@@ -92,14 +96,24 @@ class TDIH_List_Table extends WP_List_Table {
 
 				$event_date = $this->date_reorder($_POST['event_date']);
 				$event_name = stripslashes($_POST['event_name']);
+				$event_type = (array) $_POST['event_type'];
 
 				$error = $this->validate_event($event_date, $event_name);
 
 				if ($error) {
 					wp_die ($error, 'Error', array("back_link" => true));
 				} else {
-					$data = array('event_date' => $event_date, 'event_name' => $event_name);
-					$result = $wpdb->insert($wpdb->prefix.'tdih_events', $data, array('%s', '%s'));
+
+					$post = array(
+						'comment_status' => 'closed',
+						'ping_status'    => 'closed',
+						'post_status'    => 'publish',
+						'post_title'     => $event_date,
+						'post_content'   => $event_name,
+						'post_type'      => 'tdih_event',
+						'tax_input'      => $event_type == '' ? '' : array('event_type' => $event_type)
+					);
+					$result = wp_insert_post($post);
 				}
 
 			break;
@@ -107,7 +121,9 @@ class TDIH_List_Table extends WP_List_Table {
 			case 'edit':
 				$id = (int) $_GET['id'];
 
-				$event = $wpdb->get_row("SELECT DATE_FORMAT(event_date, '".$this->date_format."') as event_date, event_name FROM ".$wpdb->prefix."tdih_events WHERE id=".$id);
+				$event = $wpdb->get_row("SELECT ID, DATE_FORMAT(post_title, '".$this->date_format."') AS event_date, post_content AS event_name FROM ".$wpdb->prefix."posts WHERE ID=".$id);
+
+				$event_type = $this->tdih_terms($id);
 
 				?>
 
@@ -128,9 +144,31 @@ class TDIH_List_Table extends WP_List_Table {
 									<p><?php printf(__('The date the event occured (enter date in %s format).', 'tdih'), $this->date_description); ?></p>
 								</div>
 								<div class="form-field form-required">
-									<label for="event_name"><?php _e('Event Date', 'tdih'); ?></label>
+									<label for="event_name"><?php _e('Event Name', 'tdih'); ?></label>
 									<textarea id="event_name" name="event_name" rows="3" cols="20" required="required"><?php echo esc_html($event->event_name); ?></textarea>
 									<p><?php _e('The name of the event.', 'tdih'); ?></p>
+								</div>
+								<div class="form-field">
+									<label for="event_type"><?php _e('Event Type', 'tdih'); ?></label>
+									<select name="event_type" id="event_type">
+										<?php
+
+										$event_terms = get_terms('event_type', 'hide_empty=0');
+
+										echo "<option class='theme-option' value=''>".__('none', 'tdih')."</option>\n";
+
+										if (count($event_terms) > 0) {
+											foreach ($event_terms as $event_term) {
+												if ($event_term->name == $event_type) {
+													echo "<option class='theme-option' value='" . $event_term->slug . "' selected='selected'>" . $event_term->name . "</option>\n";
+												} else {
+													echo "<option class='theme-option' value='" . $event_term->slug . "'>" . $event_term->name . "</option>\n";
+												}
+											}
+										}
+										?>
+									</select>
+									<p><?php _e('The type of event.', 'tdih'); ?></p>
 								</div>
 								<p class="submit">
 									<input type="submit" name="submit" class="button" value="<?php _e('Save Changes', 'tdih'); ?>" />
@@ -151,26 +189,37 @@ class TDIH_List_Table extends WP_List_Table {
 				$id = (int) $_POST['id'];
 				$event_date = $this->date_reorder($_POST['event_date']);
 				$event_name = stripslashes($_POST['event_name']);
+				$event_type = (array) $_POST['event_type'];
 
 				$error = $this->validate_event($event_date, $event_name);
 
 				if ($error) {
 					wp_die ($error, 'Error', array("back_link" => true));
 				} else {
-					$data = array('event_date' => $event_date, 'event_name' => $event_name);
-					$result = $wpdb->update($wpdb->prefix.'tdih_events', $data, array('id' => $id), array('%s', '%s'), array('%d'));
+
+					$post = array(
+						'ID' => $id,
+						'post_title' => $event_date,
+						'post_content' => $event_name,
+						'tax_input' => $event_type == '' ? '' : array('event_type' => $event_type)
+					);
+					$result = wp_update_post($post);
+
 				}
 			break;
 
 			case 'delete':
 				$id = (int) $_GET['id'];
-				$result = $wpdb->query("DELETE FROM ".$wpdb->prefix."tdih_events WHERE id=".$id);
+				$result = wp_delete_post($id, true);
 			break;
 
 			case 'bulk_delete':
 				check_admin_referer('bulk-events');
-				$ids = implode(",", $_POST['event']);
-				$result = $wpdb->query("DELETE FROM ".$wpdb->prefix."tdih_events WHERE id IN(".$ids.")");
+				$ids = (array) $_POST['event'];
+
+				foreach ($ids as $i => $value) {
+					$result = wp_delete_post($ids[$i], true);
+				}
 			break;
 
 			default:
@@ -195,7 +244,7 @@ class TDIH_List_Table extends WP_List_Table {
 	}
 
 	private function date_check($date) {
-		
+
 		if (preg_match("/^(\d{4})-(\d{2})-(\d{2})$/", $date, $matches)) {
 			if (checkdate($matches[2], $matches[3], $matches[1])) {
 				return true;
@@ -206,44 +255,62 @@ class TDIH_List_Table extends WP_List_Table {
 	}
 
 	private function date_reorder($date) {
-				
+
 		switch ($this->date_format) {
-		
+
 			case '%m-%d-%Y':
 				if (preg_match("/^(\d{2})-(\d{2})-(\d{4})$/", $date, $matches)) {
 					return $matches[3].'-'.$matches[1].'-'.$matches[2];
 				}
 				break;
-				
+
 			case '%d-%m-%Y':
 				if (preg_match("/^(\d{2})-(\d{2})-(\d{4})$/", $date, $matches)) {
 					return $matches[3].'-'.$matches[2].'-'.$matches[1];
 				}
 				break;
 		}
-	    	
+
 		return $date;
-	}	    	
+	}
 
 	private function tdih_date() {
-			
+
 		switch ($this->date_format) {
-	
+
 		case '%m-%d-%Y':
-	    		$format = 'MM-DD-YYYY';
-	    		break;
-	
+					$format = 'MM-DD-YYYY';
+					break;
+
 		case '%d-%m-%Y':
-	    		$format = 'DD-MM-YYYY';
-	    		break;
-	
+					$format = 'DD-MM-YYYY';
+					break;
+
 		default:
-	    		$format = 'YYYY-MM-DD';
+					$format = 'YYYY-MM-DD';
 		}
-	
+
 		return $format;
 	}
-	
+
+	private function tdih_terms($id) {
+
+		$terms = get_the_terms($id, 'event_type');
+
+		$term_list = '';
+
+				if ($terms != '') {
+					foreach ($terms as $term) {
+						$term_list .= $term->name . ', ';
+					}
+				} else {
+					$term_list = __('none', 'tdih');
+			}
+			$term_list = trim($term_list, ', ');
+
+		return $term_list;
+	}
+
 	public function pagination( $which ) {
 		if ( empty( $this->_pagination_args ) )
 			return;
@@ -326,17 +393,17 @@ class TDIH_List_Table extends WP_List_Table {
 		list( $columns, $hidden, $sortable ) = $this->get_column_info();
 
 		$current_url = ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-		$current_url = remove_query_arg( array('paged', 'id', 'action'), $current_url );
+		$current_url = remove_query_arg(array('paged', 'id', 'action'), $current_url);
 
 		if ( isset( $_GET['orderby'] ) )
-        		$current_orderby = $_GET['orderby'];
+			$current_orderby = $_GET['orderby'];
 		else
-        		$current_orderby = '';
+			$current_orderby = '';
 
 		if ( isset( $_GET['order'] ) && 'desc' == $_GET['order'] )
-        		$current_order = 'desc';
+			$current_order = 'desc';
 		else
-        		$current_order = 'asc';
+			$current_order = 'asc';
 
 		foreach ( $columns as $column_key => $column_display_name ) {
 			$class = array( 'manage-column', "column-$column_key" );
@@ -364,8 +431,7 @@ class TDIH_List_Table extends WP_List_Table {
 					$class[] = 'sortable';
 					$class[] = $desc_first ? 'asc' : 'desc';
 				}
-
-			        $column_display_name = '<a href="' . esc_url( add_query_arg( compact( 'orderby', 'order' ), $current_url ) ) . '"><span>' . $column_display_name . '</span><span class="sorting-indicator"></span></a>';
+				$column_display_name = '<a href="' . esc_url( add_query_arg( compact( 'orderby', 'order' ), $current_url ) ) . '"><span>' . $column_display_name . '</span><span class="sorting-indicator"></span></a>';
 			}
 
 			$id = $with_id ? "id='$column_key'" : '';
@@ -390,13 +456,29 @@ class TDIH_List_Table extends WP_List_Table {
 
 		$this->process_bulk_action();
 
-		$orderby = (!empty($_REQUEST['orderby'])) ? $_REQUEST['orderby'] : 'event_date';
+		$type = empty($_REQUEST['type']) ? '' : " AND t.slug='".$_REQUEST['type']."'";
 
-		$order = (!empty($_REQUEST['order'])) ? $_REQUEST['order'] : 'asc';
+		$filter = (empty($_REQUEST['s'])) ? '' : "AND (p.post_title LIKE '%".like_escape($_REQUEST['s'])."%') OR (p.post_content LIKE '%".like_escape($_REQUEST['s'])."%') ";
 
-		$where = (!empty($_REQUEST['s'])) ? "WHERE (event_date LIKE '%".like_escape($_REQUEST['s'])."%') OR (event_name LIKE '%".like_escape($_REQUEST['s'])."%')" : '';
+		$_REQUEST['orderby'] = empty($_REQUEST['orderby']) ? 'event_date' : $_REQUEST['orderby'];
 
-		$events = $wpdb->get_results("SELECT id, DATE_FORMAT(event_date, '".$this->date_format."') as event_date, event_name FROM ".$wpdb->prefix."tdih_events ".$where." ORDER BY ".$orderby." ".$order);
+		switch ($_REQUEST['orderby']) {
+			case 'event_name':
+				$orderby = 'ORDER BY p.post_content ';
+				break;
+			case 'event_date':
+				$orderby = 'ORDER BY p.post_title ' ;
+				break;
+			case 'event_type':
+				$orderby = 'ORDER BY t.name ';
+				break;
+			default:
+				$orderby = 'ORDER BY p.post_title ';
+		}
+
+		$order = empty($_REQUEST['order']) ? 'ASC' : $_REQUEST['order'];
+
+		$events = $wpdb->get_results("SELECT p.ID, DATE_FORMAT(p.post_title, '".$this->date_format."') AS event_date, p.post_content AS event_name, t.name AS event_type, t.slug AS event_slug FROM ".$wpdb->prefix."posts p LEFT JOIN ".$wpdb->prefix."term_relationships tr ON p.ID = tr.object_id LEFT JOIN ".$wpdb->prefix."term_taxonomy tt ON tr.term_taxonomy_id = tt.term_taxonomy_id LEFT JOIN ".$wpdb->prefix."terms t ON t.term_id = tt.term_id WHERE p.post_type = 'tdih_event' ".$type.$filter.$orderby.$order);
 
 		$current_page = $this->get_pagenum();
 

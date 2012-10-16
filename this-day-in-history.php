@@ -3,7 +3,7 @@
 Plugin Name: This Day In History
 Description: This is a This Day In History management plugin and widget.
 Author: BrokenCrust
-Version: 0.7
+Version: 0.8
 Author URI: http://brokencrust.com/
 Plugin URI: http://brokencrust.com/this-day-in-history/
 License: GPLv2 or later
@@ -27,10 +27,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 /* Activation, Deactivation and Uninstall */
 
-global $tdih_db_version;
-
-$tdih_db_version = "1.0";
-
 require_once(plugin_dir_path(__FILE__).'tdih-init.class.php');
 
 register_activation_hook(__FILE__, array('tdih_init', 'on_activate'));
@@ -46,6 +42,8 @@ function load_tdih_styles(){
 }
 
 add_action('admin_enqueue_scripts', 'load_tdih_styles');
+
+add_action('wp_enqueue_scripts', 'load_tdih_styles');
 
 
 /* Widget */
@@ -78,9 +76,30 @@ add_action('admin_menu', 'tdih_add_menu');
 function tdih_add_menu() {
 	global $tdih_events;
 
-	$tdih_events = add_menu_page(__('This Day In History', 'tdih'), __('Historic Events', 'tdih'), 'manage_tdih_events', 'this-day-in-history', 'tdih_events', plugins_url('this-day-in-history/images/tdih.png'));
+	$tdih_events = add_object_page(__('This Day In History', 'tdih'), __('Historic Events', 'tdih'), 'manage_tdih_events', 'this-day-in-history', 'tdih_events', plugins_url('this-day-in-history/images/tdih.png'));
 	add_action("load-$tdih_events", 'tdih_add_help_tab');
 }
+
+add_action('admin_menu', 'tdih_add_events_submenu');
+
+function tdih_add_events_submenu() {
+
+	add_submenu_page( 'this-day-in-history', __('This Day In History', 'tdih'), __('Event Types', 'tdih'), 'manage_tdih_events', 'edit-tags.php?taxonomy=event_type' );
+}
+
+// highlight the correct top level menu
+function tdih_menu_correction($parent_file) {
+	global $current_screen;
+
+	$taxonomy = $current_screen->taxonomy;
+
+	if ($taxonomy == 'event_type') { $parent_file = 'this-day-in-history'; }
+
+	return $parent_file;
+}
+
+add_action('parent_file', 'tdih_menu_correction');
+
 
 /* Options */
 
@@ -94,7 +113,7 @@ function tdih_options() {
 	if (!current_user_can('manage_options'))  {
 		wp_die(__('You do not have sufficient permissions to access this page.', 'tih'));
 	}
-    ?>
+		?>
 	<div class="wrap">
 		<div class="icon32" id="icon-options-general"></div>
 		<h2><?php _e('This Day In History Options', 'tidh'); ?></h2>
@@ -157,29 +176,34 @@ function tdih_options_validate($input) {
 /* Help */
 
 function tdih_add_help_tab () {
-    global $tdih_events;
+		global $tdih_events;
 
-    $screen = get_current_screen();
+		$screen = get_current_screen();
 
-    if ($screen->id != $tdih_events) { return; }
+		if ($screen->id != $tdih_events) { return; }
 
-    $screen->add_help_tab(array(
-        'id'	=> 'tdih_overview',
-        'title'	=> __('Overview'),
-        'content'	=> '<p>'.__('This page provides the ability for you to add, edit and remove historic (or for that matter, future) events that you wish to display via the This Day In History widget.', 'tdih').'</p>',
-    ));
+		$screen->add_help_tab(array(
+				'id'	=> 'tdih_overview',
+				'title'	=> __('Overview'),
+				'content'	=> '<p>'.__('This page provides the ability for you to add, edit and remove historic (or for that matter, future) events that you wish to display via the This Day In History widget.', 'tdih').'</p>',
+		));
 
-    $screen->add_help_tab(array(
-        'id'	=> 'tdih_date_format',
-        'title'	=> __('Date Format'),
-        'content'	=> '<p>'.sprintf(__('You must enter a full date in the format %s - for example the 20<sup>th</sup> November 1497 should be entered as %s.', 'pontnoir'), tdih_date(), tdih_date('example')).'</p>',
-    ));
+		$screen->add_help_tab(array(
+				'id'	=> 'tdih_date_format',
+				'title'	=> __('Date Format'),
+				'content'	=> '<p>'.sprintf(__('You must enter a full date in the format %s - for example the 20<sup>th</sup> November 1497 should be entered as %s.', 'pontnoir'), tdih_date(), tdih_date('example')).'</p>',
+		));
 
-    $screen->add_help_tab(array(
-        'id'	=> 'tdih_names',
-        'title'	=> __('Event Names'),
-        'content'	=> '<p>'.__('You must enter name for the event - for example <em>John was born</em> or <em>Mary V died</em> or <em>Prof. Brian Cox played on the D:Ream hit single "Things Can Only Get Better"</em>.', 'tdih').'</p>',
-    ));
+		$screen->add_help_tab(array(
+				'id'	=> 'tdih_names',
+				'title'	=> __('Event Names'),
+				'content'	=> '<p>'.__('You must enter name for the event - for example <em>John was born</em> or <em>Mary V died</em> or <em>Prof. Brian Cox played on the D:Ream hit single "Things Can Only Get Better"</em>.', 'tdih').'</p>',
+		));
+		$screen->add_help_tab(array(
+				'id'	=> 'tdih_event_types',
+				'title'	=> __('Event Types'),
+				'content'	=> '<p>'.__('You can choose an event type for each event from a list of custom event types which you can enter on the event types screen.  An event type is optional.', 'tdih').'</p>',
+		));
 }
 
 
@@ -234,6 +258,24 @@ function tdih_events() {
 									<textarea id="event_name" name="event_name" rows="3" cols="20" required="required" placeholder="Name of the event"></textarea>
 									<p><?php _e('The name of the event.', 'tdih'); ?></p>
 								</div>
+								<div class="form-field">
+									<label for="event_type"><?php _e('Event Type', 'tdih'); ?></label>
+									<select name="event_type" id="event_type">
+										<?php
+
+										$event_types = get_terms('event_type', 'hide_empty=0');
+
+										echo "<option class='theme-option' value=''>".__('none', 'tdih')."</option>\n";
+
+										if (count($event_types) > 0) {
+											foreach ($event_types as $event_type) {
+												echo "<option class='theme-option' value='" . $event_type->slug . "'>" . $event_type->name . "</option>\n";
+											}
+										}
+										?>
+									</select>
+									<p><?php _e('The type of event.', 'tdih'); ?></p>
+								</div>
 								<p class="submit">
 									<input type="submit" name="submit" class="button" value="<?php _e('Add New Event', 'tdih'); ?>" />
 								</p>
@@ -254,23 +296,110 @@ function tdih_date($type = 'format') {
 	switch ($options['date_format']) {
 
 	case '%m-%d-%Y':
-    		$format = 'MM-DD-YYYY';
-    		$example = '11-20-1497';
-    		break;
+				$format = 'MM-DD-YYYY';
+				$example = '11-20-1497';
+				break;
 
 	case '%d-%m-%Y':
-    		$format = 'DD-MM-YYYY';
-    		$example = '20-11-1497';
-    		break;
+				$format = 'DD-MM-YYYY';
+				$example = '20-11-1497';
+				break;
 
 	default:
-    		$format = 'YYYY-MM-DD';
-    		$example = '1497-11-20';
+				$format = 'YYYY-MM-DD';
+				$example = '1497-11-20';
 	}
 
 	$result = ($type == 'example' ? $example : $format);
 
 	return $result;
 }
+
+/* Register Event Type Taxonomy */
+
+function build_taxonomies() {
+
+	$labels = array(
+		'name' => _x('Event Types', 'taxonomy general name', 'tdih'),
+		'singular_name' => _x('Event Type', 'taxonomy singular name', 'tdih'),
+		'search_items' =>  __('Search Event Types', 'tdih'),
+		'popular_items' => __('Popular Event Types', 'tdih'),
+		'all_items' => __('All Event Types', 'tdih'),
+		'parent_item' => null,
+		'parent_item_colon' => null,
+		'edit_item' => __('Edit Event Type', 'tdih'),
+		'update_item' => __('Update Event Type', 'tdih'),
+		'add_new_item' => __('Add New Event Type', 'tdih'),
+		'new_item_name' => __('New Event Type Name', 'tdih'),
+		'separate_items_with_commas' => __('Separate event types with commas', 'tdih'),
+		'add_or_remove_items' => __('Add or remove event types', 'tdih'),
+		'choose_from_most_used' => __('Choose from the most used event types', 'tdih'),
+		'menu_name' => __('Event Types', 'tdih'),
+	);
+
+	$args = array(
+		'labels'            => $labels,
+		'public'            => true,
+		'show_in_nav_menus' => false,
+		'show_ui'           => false,
+		'query_var'         => false
+	);
+
+	register_taxonomy('event_type', 'tdih_event', $args);
+}
+
+add_action('init', 'build_taxonomies', 0);
+
+function tdih_manage_event_type_event_column( $columns ) {
+
+	unset( $columns['posts'] );
+
+	$columns['events'] = __('Events', 'tdih');
+
+	return $columns;
+}
+
+add_filter( 'manage_edit-event_type_columns', 'tdih_manage_event_type_event_column' );
+
+function tdih_manage_event_type_column($display, $column, $term_id) {
+
+	if ('events' === $column) {
+		$term = get_term($term_id, 'event_type');
+		echo '<a href="admin.php?page=this-day-in-history&type='.$term->slug.'">'.$term->count.'</a>';
+	}
+}
+
+add_action('manage_event_type_custom_column', 'tdih_manage_event_type_column', 10, 3);
+
+
+/* Register Event Post Type */
+
+function codex_custom_init() {
+
+	$labels = array(
+		'name' => _x('Events', 'post type general name', 'tdih'),
+		'singular_name' => _x('Event', 'post type singular name', 'tdih'),
+		'add_new' => _x('Add New', 'event', 'tdih'),
+		'add_new_item' => __('Add New Event', 'tdih'),
+		'edit_item' => __('Edit Event', 'tdih'),
+		'new_item' => __('New Event', 'tdih'),
+		'all_items' => __('All Events', 'tdih'),
+		'view_item' => __('View Event', 'tdih'),
+		'search_items' => __('Search Events', 'tdih'),
+		'not_found' =>  __('No events found', 'tdih'),
+		'not_found_in_trash' => __('No events found in Trash', 'tdih'),
+		'parent_item_colon' => null,
+		'menu_name' => _('Historic Events', 'tdih')
+	);
+
+	$args = array(
+		'labels' => $labels,
+		'public' => false,
+	);
+
+	register_post_type( 'tdih_event', $args );
+}
+
+
 
 ?>

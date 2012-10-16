@@ -2,8 +2,8 @@
 Contributors: BrokenCrust
 Tags: history, today in history, on this day, this day in history, widget
 Requires at least: 3.3
-Tested up to: 3.3.1
-Stable tag: 0.7
+Tested up to: 3.4.2
+Stable tag: 0.8
 License: GPLv2 or later
 
 This is a This Day In History management plugin and widget which you can use to enter and display historic events.
@@ -30,6 +30,10 @@ Installing is pretty easy takes only a minute or two.
 
 
 == Changelog ==
+
+= 0.8 =
+* Added event types
+* Events now stored as posts
 
 = 0.7 =
 * Added widget option to show or not show the year
