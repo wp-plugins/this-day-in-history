@@ -21,11 +21,11 @@ class ThisDayInHistoryWidget extends WP_Widget {
 
 		$day = $today['mday'].'-'.$today['mon'];
 
-		$show_types == 1 ? $order = ' ORDER BY t.name ASC, YEAR(p.post_title) ASC' : $order = ' ORDER BY YEAR(p.post_title) ASC';
+		$show_types == 1 ? $order = ' ORDER BY ts.name ASC, YEAR(p.post_title) ASC' : $order = ' ORDER BY YEAR(p.post_title) ASC';
 
 		$filter_type == 'not-filtered' ? $filter = '' : ($filter_type == '' ? $filter = " AND t.slug IS NULL" : $filter = " AND t.slug='".$filter_type."'");
 
-		$events = $wpdb->get_results("SELECT YEAR(p.post_title) AS event_year, p.post_content AS event_name, t.name AS event_type FROM ".$wpdb->prefix."posts p LEFT JOIN ".$wpdb->prefix."term_relationships tr ON p.ID = tr.object_id LEFT JOIN ".$wpdb->prefix."term_taxonomy tt ON tr.term_taxonomy_id = tt.term_taxonomy_id LEFT JOIN ".$wpdb->prefix."terms t ON t.term_id = tt.term_id WHERE p.post_type = 'tdih_event' AND DATE_FORMAT(p.post_title,'%e-%c')='".$day."'".$filter.$order);
+		$events = $wpdb->get_results("SELECT YEAR(p.post_title) AS event_year, p.post_content AS event_name, ts.name AS event_type FROM ".$wpdb->prefix."posts p LEFT JOIN (SELECT tr.object_id, t.name, t.slug FROM ".$wpdb->prefix."terms t LEFT JOIN ".$wpdb->prefix."term_taxonomy tt ON t.term_id = tt.term_id LEFT JOIN ".$wpdb->prefix."term_relationships tr ON tt.term_taxonomy_id = tr.term_taxonomy_id WHERE tt.taxonomy='event_type') ts ON p.ID = ts.object_id WHERE p.post_type = 'tdih_event' AND DATE_FORMAT(p.post_title,'%e-%c')='".$day."'".$filter.$order);
 
 		$event_type = '';
 

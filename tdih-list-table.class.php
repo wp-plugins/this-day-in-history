@@ -456,7 +456,7 @@ class TDIH_List_Table extends WP_List_Table {
 
 		$this->process_bulk_action();
 
-		$type = empty($_REQUEST['type']) ? '' : " AND t.slug='".$_REQUEST['type']."'";
+		$type = empty($_REQUEST['type']) ? '' : " AND ts.slug='".$_REQUEST['type']."'";
 
 		$filter = (empty($_REQUEST['s'])) ? '' : "AND (p.post_title LIKE '%".like_escape($_REQUEST['s'])."%') OR (p.post_content LIKE '%".like_escape($_REQUEST['s'])."%') ";
 
@@ -470,7 +470,7 @@ class TDIH_List_Table extends WP_List_Table {
 				$orderby = 'ORDER BY p.post_title ' ;
 				break;
 			case 'event_type':
-				$orderby = 'ORDER BY t.name ';
+				$orderby = 'ORDER BY ts.name ';
 				break;
 			default:
 				$orderby = 'ORDER BY p.post_title ';
@@ -478,7 +478,7 @@ class TDIH_List_Table extends WP_List_Table {
 
 		$order = empty($_REQUEST['order']) ? 'ASC' : $_REQUEST['order'];
 
-		$events = $wpdb->get_results("SELECT p.ID, DATE_FORMAT(p.post_title, '".$this->date_format."') AS event_date, p.post_content AS event_name, t.name AS event_type, t.slug AS event_slug FROM ".$wpdb->prefix."posts p LEFT JOIN ".$wpdb->prefix."term_relationships tr ON p.ID = tr.object_id LEFT JOIN ".$wpdb->prefix."term_taxonomy tt ON tr.term_taxonomy_id = tt.term_taxonomy_id LEFT JOIN ".$wpdb->prefix."terms t ON t.term_id = tt.term_id WHERE p.post_type = 'tdih_event' ".$type.$filter.$orderby.$order);
+		$events = $wpdb->get_results("SELECT p.ID, DATE_FORMAT(p.post_title, '".$this->date_format."') AS event_date, p.post_content AS event_name, ts.name AS event_type, ts.slug AS event_slug FROM ".$wpdb->prefix."posts p LEFT JOIN (SELECT tr.object_id, t.name, t.slug FROM ".$wpdb->prefix."terms t LEFT JOIN ".$wpdb->prefix."term_taxonomy tt ON t.term_id = tt.term_id LEFT JOIN ".$wpdb->prefix."term_relationships tr ON tt.term_taxonomy_id = tr.term_taxonomy_id WHERE tt.taxonomy='event_type') ts ON p.ID = ts.object_id WHERE p.post_type = 'tdih_event' ".$type.$filter.$orderby.$order);
 
 		$current_page = $this->get_pagenum();
 
