@@ -28,32 +28,9 @@ class tdih_init {
 	}
 
 	private function tdih_activate() {
-		global $wpdb;
+		global $wpdb, $tdih_db_version;
 
-		$tdih_db_version = get_option('tdih_db_version', 0);
-
-		# If the old custom table exists then move the events to the posts table
-		if ($tdih_db_version == 1.0) {
-
-			$events = $wpdb->get_results("SELECT event_date, event_name FROM ".$wpdb->prefix."tdih_events");
-
-			if (count($events) > 0) {
-				foreach ($events as $event) {
-
-					$post = array(
-						'comment_status' => 'closed',
-						'ping_status'    => 'closed',
-						'post_status'    => 'publish',
-						'post_title'     => $event->event_date,
-						'post_content'   => $event->event_name,
-						'post_type'      => 'tdih_event'
-					);
-
-					$result = wp_insert_post($post);
-				}
-			}
-			delete_option("tdih_db_version");
-		}
+		add_option('tdih_db_version', $tdih_db_version);
 
 		add_option('tdih_options', array('date_format'=>'%Y-%m-%d', 'per_page' => '10'));
 

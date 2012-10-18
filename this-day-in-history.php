@@ -3,7 +3,7 @@
 Plugin Name: This Day In History
 Description: This is a This Day In History management plugin and widget.
 Author: BrokenCrust
-Version: 0.8
+Version: 0.8.1
 Author URI: http://brokencrust.com/
 Plugin URI: http://brokencrust.com/this-day-in-history/
 License: GPLv2 or later
@@ -27,12 +27,42 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 /* Activation, Deactivation and Uninstall */
 
+global $tdih_db_version;
+
+$tdih_db_version = "1.1";
+
 require_once(plugin_dir_path(__FILE__).'tdih-init.class.php');
 
 register_activation_hook(__FILE__, array('tdih_init', 'on_activate'));
 
 register_deactivation_hook(__FILE__, array('tdih_init', 'on_deactivate'));
 
+$tdih_current_db_version = get_option('tdih_db_version', 0);
+
+if ($tdih_db_version != $tdih_current_db_version) {
+
+	# If the old custom table exists then move the events to the posts table
+	if ($tdih_current_db_version == 1.0) {
+	
+		$events = $wpdb->get_results("SELECT event_date, event_name FROM ".$wpdb->prefix."tdih_events");
+	
+		if (count($events) > 0) {
+			foreach ($events as $event) {
+	
+				$post = array(
+					'comment_status' => 'closed',
+					'ping_status'    => 'closed',
+					'post_status'    => 'publish',
+					'post_title'     => $event->event_date,
+					'post_content'   => $event->event_name,
+					'post_type'      => 'tdih_event'
+				);
+				$result = wp_insert_post($post);
+			}
+		}
+	}
+	update_option('tdih_db_version', $tdih_db_version);
+}
 
 /* CSS */
 
