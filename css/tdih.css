@@ -1,0 +1,17 @@
+/*
+  This Day In History Plugin CSS
+*/
+
+#tdih_icon { background: transparent url('../images/tdih_admin_icon.png') no-repeat; }
+
+#editevent { width: 50%; }
+
+.column-events { width: 80px; }
+
+.column-event_date { width: 120px; }
+
+.column-event_type { width: 150px; }
+
+.tdih_event_type { font-weight: bold; list-style-type: none; }
+
+.tdih_none { opacity: 0.5; filter: alpha(opacity=50); }
