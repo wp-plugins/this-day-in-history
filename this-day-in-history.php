@@ -3,7 +3,7 @@
 Plugin Name: This Day In History
 Description: This is a This Day In History management plugin and widget.
 Author: BrokenCrust
-Version: 0.8.2
+Version: 0.9
 Author URI: http://brokencrust.com/
 Plugin URI: http://brokencrust.com/this-day-in-history/
 License: GPLv2 or later
@@ -43,12 +43,12 @@ if ($tdih_db_version != $tdih_current_db_version) {
 
 	# If the old custom table exists then move the events to the posts table
 	if ($tdih_current_db_version == 1.0) {
-	
+
 		$events = $wpdb->get_results("SELECT event_date, event_name FROM ".$wpdb->prefix."tdih_events");
-	
+
 		if (count($events) > 0) {
 			foreach ($events as $event) {
-	
+
 				$post = array(
 					'comment_status' => 'closed',
 					'ping_status'    => 'closed',
@@ -234,6 +234,12 @@ function tdih_add_help_tab () {
 				'title'	=> __('Event Types'),
 				'content'	=> '<p>'.__('You can choose an event type for each event from a list of custom event types which you can enter on the event types screen.  An event type is optional.', 'tdih').'</p>',
 		));
+		$screen->add_help_tab(array(
+				'id'	=> 'tdih_shortcode',
+				'title'	=> __('Shortcode'),
+				'content'	=> '<p>'.__('You can add a tdih shortcode to any post or page to display the list of events for today.', 'tdih').'</p><p>'.__('There are three optional attributes for the shortcode:', 'tdih').'</p><ul><li>'.__('show_types (1 or 0) - 1 shows event types (default) and 0 does not.', 'tdih').'</li><li>'.__('show_year (1 or 0) - 1 shows the year of the event (default) and 0 does not.', 'tdih').'</li><li>'.__('filter_type - enter a type to show only that type. Shows all types by default.', 'tdih').'</li></ul><p>'.__('Example use:', 'tdih').'</p><p>'.__('[tdih] - This shows year and event types for all event types.', 'tdih').'</p><p>'.__('[tdih show_types=0, filter_type=\'births\'] - This shows year but not types for the event type (slug) of birth.', 'tdih').'</p>',
+		));
+
 }
 
 
@@ -430,6 +436,52 @@ function codex_custom_init() {
 	register_post_type( 'tdih_event', $args );
 }
 
+
+/* Create shortcode Function for TDIH display*/
+
+function tdih_shortcode($atts) {
+	global $wpdb;
+
+	extract(shortcode_atts(array('show_types' => 1, 'show_year' => 1, 'filter_type' => 'not-filtered'), $atts));
+
+	$today = getdate(current_time('timestamp'));
+
+	$day = $today['mday'].'-'.$today['mon'];
+
+	$show_types == 1 ? $order = ' ORDER BY ts.name ASC, YEAR(p.post_title) ASC' : $order = ' ORDER BY YEAR(p.post_title) ASC';
+
+	$filter_type == 'not-filtered' ? $filter = '' : ($filter_type == '' ? $filter = " AND ts.slug IS NULL" : $filter = " AND ts.slug='".$filter_type."'");
+
+	$events = $wpdb->get_results("SELECT YEAR(p.post_title) AS event_year, p.post_content AS event_name, ts.name AS event_type FROM ".$wpdb->prefix."posts p LEFT JOIN (SELECT tr.object_id, t.name, t.slug FROM ".$wpdb->prefix."terms t LEFT JOIN ".$wpdb->prefix."term_taxonomy tt ON t.term_id = tt.term_id LEFT JOIN ".$wpdb->prefix."term_relationships tr ON tt.term_taxonomy_id = tr.term_taxonomy_id WHERE tt.taxonomy='event_type') ts ON p.ID = ts.object_id WHERE p.post_type = 'tdih_event' AND DATE_FORMAT(p.post_title,'%e-%c')='".$day."'".$filter.$order);
+
+	$event_type = '';
+
+	if (!empty($events)) {
+
+		$tdih_text = '<ul class="tdih_list">';
+
+		foreach ($events as $e => $values) {
+			if ($show_types == 1)  {
+				if ($events[$e]->event_type != $event_type) {
+					$event_type = $events[$e]->event_type;
+					$tdih_text .= '<li class="tdih_event_type">'.$events[$e]->event_type.'</li>';
+				}
+			}
+			$tdih_text .= '<li>';
+			if ($show_year == 1) {
+				$tdih_text .= '<span class="tdih_year">'.$events[$e]->event_year.'</span>  ';
+			}
+			$tdih_text .= $events[$e]->event_name.'</li>';
+		}
+		$tdih_text .= '</ul>';
+	} else {
+		$tdih_text = __('No Events');
+	}
+
+	return $tdih_text;
+}
+
+add_shortcode( 'tdih', 'tdih_shortcode' );
 
 
 ?>
