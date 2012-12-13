@@ -3,7 +3,7 @@
 Plugin Name: This Day In History
 Description: This is a This Day In History management plugin and widget.
 Author: BrokenCrust
-Version: 0.9
+Version: 0.9.1
 Author URI: http://brokencrust.com/
 Plugin URI: http://brokencrust.com/this-day-in-history/
 License: GPLv2 or later

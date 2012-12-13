@@ -2,8 +2,8 @@
 Contributors: BrokenCrust
 Tags: history, today in history, on this day, this day in history, widget
 Requires at least: 3.3
-Tested up to: 3.4.2
-Stable tag: 0.9
+Tested up to: 3.5
+Stable tag: 0.9.1
 License: GPLv2 or later
 
 This is a This Day In History management plugin and widget which you can use to enter and display historic events.
@@ -30,6 +30,9 @@ Installing is pretty easy takes only a minute or two.
 
 
 == Changelog ==
+
+= 0.9.1 =
+* Fixed bug with search on admin list
 
 = 0.9 =
 * tdih shortcode added
