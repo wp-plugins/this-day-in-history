@@ -3,9 +3,9 @@
 Plugin Name: This Day In History
 Description: This is a This Day In History management plugin and widget.
 Author: BrokenCrust
-Version: 0.9.1
+Version: 0.9.2
 Author URI: http://brokencrust.com/
-Plugin URI: http://brokencrust.com/this-day-in-history/
+Plugin URI: http://brokencrust.com/plugins/this-day-in-history/
 License: GPLv2 or later
 */
 
@@ -64,7 +64,8 @@ if ($tdih_db_version != $tdih_current_db_version) {
 	update_option('tdih_db_version', $tdih_db_version);
 }
 
-/* CSS */
+
+/* Add plugin CSS to the admin and site */
 
 function load_tdih_styles(){
 	wp_register_style('tdih', plugin_dir_url(__FILE__).'css/tdih.css');
@@ -76,14 +77,12 @@ add_action('admin_enqueue_scripts', 'load_tdih_styles');
 add_action('wp_enqueue_scripts', 'load_tdih_styles');
 
 
-/* Widget */
+/* Include the widget code */
 
 require_once(plugin_dir_path(__FILE__).'/tdih-widget.php');
 
 
-/* Admin Bar */
-
-add_action("init", "tdih_add_event_to_menu");
+/* Add historic event item to the Admin Bar "New" drop down */
 
 function tdih_add_event_to_menu() {
 	global $wp_admin_bar;
@@ -98,10 +97,10 @@ function tdih_add_event_to_menu() {
 		'meta'   => false));
 }
 
+add_action("init", "tdih_add_event_to_menu");
 
-/* Menu */
 
-add_action('admin_menu', 'tdih_add_menu');
+/* Add historic events menu to the main admin menu */
 
 function tdih_add_menu() {
 	global $tdih_events;
@@ -110,14 +109,21 @@ function tdih_add_menu() {
 	add_action("load-$tdih_events", 'tdih_add_help_tab');
 }
 
-add_action('admin_menu', 'tdih_add_events_submenu');
+add_action('admin_menu', 'tdih_add_menu');
+
+
+/* Add sub-menu for event types */
 
 function tdih_add_events_submenu() {
 
-	add_submenu_page( 'this-day-in-history', __('This Day In History', 'tdih'), __('Event Types', 'tdih'), 'manage_tdih_events', 'edit-tags.php?taxonomy=event_type' );
+	add_submenu_page('this-day-in-history', __('This Day In History', 'tdih'), __('Event Types', 'tdih'), 'manage_tdih_events', 'edit-tags.php?taxonomy=event_type' );
 }
 
-// highlight the correct top level menu
+add_action('admin_menu', 'tdih_add_events_submenu');
+
+
+/* Highlight the correct top level menu */
+
 function tdih_menu_correction($parent_file) {
 	global $current_screen;
 
@@ -133,11 +139,11 @@ add_action('parent_file', 'tdih_menu_correction');
 
 /* Options */
 
-add_action('admin_menu', 'tdih_options_menu');
-
 function tdih_options_menu() {
 	add_options_page('This Day In History Options', 'This Day In History', 'manage_options', 'tdih', 'tdih_options');
 }
+
+add_action('admin_menu', 'tdih_options_menu');
 
 function tdih_options() {
 	if (!current_user_can('manage_options'))  {
@@ -156,14 +162,14 @@ function tdih_options() {
 <?php
 }
 
-add_action('admin_init', 'tdih_admin_init');
-
 function tdih_admin_init(){
 	register_setting( 'tdih_options', 'tdih_options', 'tdih_options_validate' );
 	add_settings_section('tdih_main', 'Historical Events Settings', 'tdih_section_text', 'tdih');
 	add_settings_field('date_format', 'Event Date Format', 'tdih_date_format', 'tdih', 'tdih_main');
 	add_settings_field('per_page', 'Number of Events Per Page', 'tdih_per_page', 'tdih', 'tdih_main');
 }
+
+add_action('admin_init', 'tdih_admin_init');
 
 function tdih_section_text() {
 	echo '<p>'.__('Options for the Historical Events administration page.','tdih').'</p>';
@@ -257,7 +263,6 @@ function tdih_events() {
 	if ($EventListTable->show_main_section) {
 
 		?>
-
 			<div id="tdih" class="wrap">
 				<div id="tdih_icon" class="icon32"></div>
 				<h2><?php _e('This Day In History', 'tdih'); ?><?php if (!empty($_REQUEST['s'])) { printf('<span class="subtitle">'.__('Search results for &#8220;%s&#8221;', 'tdih').'</span>', esc_html(stripslashes($_REQUEST['s']))); } ?></h2>
@@ -286,7 +291,7 @@ function tdih_events() {
 								<?php wp_nonce_field('this_day_in_history'); ?>
 								<div class="form-field form-required">
 									<label for="event_date"><?php _e('Event Date', 'tdih'); ?></label>
-									<input type="date" name="event_date" id="event_date" value="" required="required" placeholder="<?php echo tdih_date(); ?>" />
+									<input type="text" name="event_date" id="event_date" value="" required="required" placeholder="<?php echo tdih_date(); ?>" />
 									<p><?php printf(__('The date the event occured (enter date in %s format).', 'tdih'), tdih_date()); ?></p>
 								</div>
 								<div class="form-field form-required">
@@ -320,7 +325,6 @@ function tdih_events() {
 					</div>
 				</div>
 			</div>
-
 		<?php
 
 	}
@@ -351,9 +355,10 @@ function tdih_date($type = 'format') {
 	return $result;
 }
 
+
 /* Register Event Type Taxonomy */
 
-function build_taxonomies() {
+function tdih_build_taxonomies() {
 
 	$labels = array(
 		'name' => _x('Event Types', 'taxonomy general name', 'tdih'),
@@ -384,7 +389,8 @@ function build_taxonomies() {
 	register_taxonomy('event_type', 'tdih_event', $args);
 }
 
-add_action('init', 'build_taxonomies', 0);
+add_action('init', 'tdih_build_taxonomies', 0);
+
 
 function tdih_manage_event_type_event_column( $columns ) {
 
@@ -396,6 +402,7 @@ function tdih_manage_event_type_event_column( $columns ) {
 }
 
 add_filter( 'manage_edit-event_type_columns', 'tdih_manage_event_type_event_column' );
+
 
 function tdih_manage_event_type_column($display, $column, $term_id) {
 
@@ -410,7 +417,7 @@ add_action('manage_event_type_custom_column', 'tdih_manage_event_type_column', 1
 
 /* Register Event Post Type */
 
-function codex_custom_init() {
+function tdih_register_post_types() {
 
 	$labels = array(
 		'name' => _x('Events', 'post type general name', 'tdih'),
@@ -425,7 +432,7 @@ function codex_custom_init() {
 		'not_found' =>  __('No events found', 'tdih'),
 		'not_found_in_trash' => __('No events found in Trash', 'tdih'),
 		'parent_item_colon' => null,
-		'menu_name' => _('Historic Events', 'tdih')
+		'menu_name' => __('Historic Events', 'tdih')
 	);
 
 	$args = array(
@@ -433,8 +440,10 @@ function codex_custom_init() {
 		'public' => false,
 	);
 
-	register_post_type( 'tdih_event', $args );
+	register_post_type('tdih_event', $args);
 }
+
+add_action('init', 'tdih_register_post_types');
 
 
 /* Create shortcode Function for TDIH display*/
@@ -481,7 +490,6 @@ function tdih_shortcode($atts) {
 	return $tdih_text;
 }
 
-add_shortcode( 'tdih', 'tdih_shortcode' );
-
+add_shortcode('tdih', 'tdih_shortcode');
 
 ?>

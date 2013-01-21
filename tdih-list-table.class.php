@@ -140,7 +140,7 @@ class TDIH_List_Table extends WP_List_Table {
 								<?php wp_nonce_field('this_day_in_history_edit'); ?>
 								<div class="form-field form-required">
 									<label for="event_date"><?php _e('Event Date', 'tdih'); ?></label>
-									<input type="date" name="event_date" id="event_date" value="<?php echo $event->event_date; ?>" required="required" />
+									<input type="text" name="event_date" id="event_date" value="<?php echo $event->event_date; ?>" required="required" />
 									<p><?php printf(__('The date the event occured (enter date in %s format).', 'tdih'), $this->date_description); ?></p>
 								</div>
 								<div class="form-field form-required">
@@ -196,7 +196,6 @@ class TDIH_List_Table extends WP_List_Table {
 				if ($error) {
 					wp_die ($error, 'Error', array("back_link" => true));
 				} else {
-
 					$post = array(
 						'ID' => $id,
 						'post_title' => $event_date,
@@ -204,7 +203,6 @@ class TDIH_List_Table extends WP_List_Table {
 						'tax_input' => $event_type == '' ? '' : array('event_type' => $event_type)
 					);
 					$result = wp_update_post($post);
-
 				}
 			break;
 
