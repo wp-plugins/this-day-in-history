@@ -3,7 +3,7 @@ Contributors: BrokenCrust
 Tags: history, today in history, on this day, this day in history, widget
 Requires at least: 3.3
 Tested up to: 3.5.1
-Stable tag: 0.9.2
+Stable tag: 0.9.3
 License: GPLv2 or later
 
 This is a This Day In History management plugin and widget which you can use to enter and display historic events.
@@ -30,6 +30,9 @@ Installing is pretty easy takes only a minute or two.
 
 
 == Changelog ==
+
+= 0.9.3 =
+* Fixed Admin Bar bug in 3.6
 
 = 0.9.2 =
 * Improved function naming for cross plugin compatibility

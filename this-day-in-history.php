@@ -3,7 +3,7 @@
 Plugin Name: This Day In History
 Description: This is a This Day In History management plugin and widget.
 Author: BrokenCrust
-Version: 0.9.2
+Version: 0.9.3
 Author URI: http://brokencrust.com/
 Plugin URI: http://brokencrust.com/plugins/this-day-in-history/
 License: GPLv2 or later
@@ -90,14 +90,14 @@ function tdih_add_event_to_menu() {
 	if (!current_user_can('manage_tdih_events') || !is_admin_bar_showing()) { return; }
 
 	$wp_admin_bar->add_node(array(
-		'id'     => 'add-event',
+		'id'     => 'add-tdih-event',
 		'parent' => 'new-content',
-		'title'  => __('Historic Event','tdih'),
+		'title'  => __('Historic Event', 'tdih'),
 		'href'   => admin_url('admin.php?page=this-day-in-history'),
 		'meta'   => false));
 }
 
-add_action("init", "tdih_add_event_to_menu");
+add_action('admin_bar_menu', 'tdih_add_event_to_menu', 999);
 
 
 /* Add historic events menu to the main admin menu */
