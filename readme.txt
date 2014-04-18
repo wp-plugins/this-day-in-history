@@ -2,7 +2,7 @@
 Contributors: BrokenCrust
 Tags: history, today in history, on this day, this day in history, widget
 Requires at least: 3.3
-Tested up to: 3.8
+Tested up to: 3.9
 Stable tag: 0.9.3
 License: GPLv2 or later
 
