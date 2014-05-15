@@ -2,8 +2,8 @@
 Contributors: BrokenCrust
 Tags: history, today in history, on this day, this day in history, widget
 Requires at least: 3.3
-Tested up to: 3.9
-Stable tag: 0.9.3
+Tested up to: 3.9.1
+Stable tag: 1.0
 License: GPLv2 or later
 
 This is a This Day In History management plugin and widget which you can use to enter and display historic events.
@@ -30,6 +30,11 @@ Installing is pretty easy takes only a minute or two.
 
 
 == Changelog ==
+
+= 1.0 =
+* First production release
+* Added show_all to the shortcode
+* Added Option for the text displayed when there are no events.
 
 = 0.9.3 =
 * Fixed Admin Bar bug in 3.6

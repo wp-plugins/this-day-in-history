@@ -50,7 +50,15 @@ class ThisDayInHistoryWidget extends WP_Widget {
 			}
 			echo '</ul>';
 			echo $after_widget;
-		}
+		} else {
+			$options = get_option('tdih_options');
+			if (!empty($options['no_events'])) {
+				echo $before_widget;
+				echo $before_title.$title.$after_title;
+				echo '<p>'.$options['no_events'].'</p>';
+				echo $after_widget;
+			}	
+		}		
 	}
 
 	function update($new_instance, $old_instance) {
