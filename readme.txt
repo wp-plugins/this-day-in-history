@@ -1,9 +1,9 @@
 === This Day In History ===
 Contributors: BrokenCrust
 Tags: history, today in history, on this day, this day in history, widget
-Requires at least: 3.3
-Tested up to: 3.9.1
-Stable tag: 1.0
+Requires at least: 3.8
+Tested up to: 4.0
+Stable tag: 1.1
 License: GPLv2 or later
 
 This is a This Day In History management plugin and widget which you can use to enter and display historic events.
@@ -11,7 +11,7 @@ This is a This Day In History management plugin and widget which you can use to 
 
 == Description ==
 
-This Plugin allows you to enter and manage different kinds of historical events that you then display in via a This Day In History widget.
+This Plugin allows you to enter and manage different kinds of historical events that you then display in via a This Day In History widget or a shortcode.
 
 
 == Installation ==
@@ -31,10 +31,16 @@ Installing is pretty easy takes only a minute or two.
 
 == Changelog ==
 
+= 1.1 =
+* Fixed pagination issues with WordPress 4.0
+* Moved number of events shown to a screen option
+* Overhaul of admin screens
+* Removed custom table migration code for early versions
+
 = 1.0 =
 * First production release
 * Added show_all to the shortcode
-* Added Option for the text displayed when there are no events.
+* Added Option for the text displayed when there are no events
 
 = 0.9.3 =
 * Fixed Admin Bar bug in 3.6

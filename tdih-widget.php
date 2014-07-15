@@ -1,10 +1,9 @@
 <?php
 
-class ThisDayInHistoryWidget extends WP_Widget {
+class this_day_in_history_widget extends WP_Widget {
 
-	function ThisDayInHistoryWidget() {
-		$widget_ops = array('classname' => 'widget_this_day_in_history', 'description' => __('Lists historic events that happened on this day in eariler years.', 'tdih') );
-		$this->WP_Widget('this_day_in_history_widget', __('This Day In History', 'tdih'), $widget_ops);
+	function __construct() {
+		parent::__construct('this_day_in_history_widget', __('This Day In History', 'this-day-in-history'), array('classname' => 'widget_this_day_in_history', 'description' => __('Lists the sub-categories for a given category.', 'this-day-in-history')));
 	}
 
 	function widget($args, $instance) {
@@ -12,7 +11,7 @@ class ThisDayInHistoryWidget extends WP_Widget {
 
 		extract($args, EXTR_SKIP);
 
-		$title = apply_filters('widget_title', empty($instance['title']) ? __('This Day In History', 'tdih') : $instance['title'], $instance, $this->id_base);
+		$title = apply_filters('widget_title', empty($instance['title']) ? __('This Day In History', 'this-day-in-history') : $instance['title'], $instance, $this->id_base);
 		$show_year = !isset($instance['show_year']) ? 1 : $instance['show_year'];
 		$show_types = !isset($instance['show_types']) ? 1 : $instance['show_types'];
 		$filter_type = !isset($instance['filter_type']) ? 'not-filtered' : $instance['filter_type'];
@@ -57,8 +56,8 @@ class ThisDayInHistoryWidget extends WP_Widget {
 				echo $before_title.$title.$after_title;
 				echo '<p>'.$options['no_events'].'</p>';
 				echo $after_widget;
-			}	
-		}		
+			}
+		}
 	}
 
 	function update($new_instance, $old_instance) {
@@ -75,45 +74,40 @@ class ThisDayInHistoryWidget extends WP_Widget {
 
 	function form($instance) {
 
-		$instance = wp_parse_args((array) $instance, array('title' => __('This Day In History', 'tdih'), 'show_year' => 1, 'show_types' => 0, 'filter_type' => 'not-filtered'));
+		$instance = wp_parse_args((array) $instance, array('title' => __('This Day In History', 'this-day-in-history'), 'show_year' => 1, 'show_types' => 0, 'filter_type' => 'not-filtered'));
 
 		?>
 			<p>
-				<label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Widget Title:', 'tdih'); ?></label>
+				<label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:', 'this-day-in-history'); ?></label>
 				<input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo esc_attr($instance['title']) ?>" />
 			</p>
 			<p>
 				<input id="<?php echo $this->get_field_id('show_year'); ?>" name="<?php echo $this->get_field_name('show_year'); ?>" type="checkbox" value="1" <?php if ($instance['show_year']) echo 'checked="checked"'; ?>/>
-				<label for="<?php echo $this->get_field_id('show_year'); ?>"><?php _e('Show Year?', 'tdih'); ?></label>
-			</p>
-			<p>
+				<label for="<?php echo $this->get_field_id('show_year'); ?>"><?php _e('Show year', 'this-day-in-history'); ?></label>
+				<br>
 				<input id="<?php echo $this->get_field_id('show_types'); ?>" name="<?php echo $this->get_field_name('show_types'); ?>" type="checkbox" value="1" <?php if ($instance['show_types']) echo 'checked="checked"'; ?>/>
-				<label for="<?php echo $this->get_field_id('show_types'); ?>"><?php _e('Show Event Types?', 'tdih'); ?></label>
+				<label for="<?php echo $this->get_field_id('show_types'); ?>"><?php _e('Show event types', 'this-day-in-history'); ?></label>
 			</p>
 			<p>
-				<label for="<?php echo $this->get_field_id('filter_type'); ?>"><?php _e('Filter Events by Type:', 'tdih'); ?></label>
+				<label for="<?php echo $this->get_field_id('filter_type'); ?>"><?php _e('Filter events by type:', 'this-day-in-history'); ?></label>
 				<select class="widefat" id="<?php echo $this->get_field_id('filter_type'); ?>" name="<?php echo $this->get_field_name('filter_type'); ?>">
 					<?php
 						$event_types = get_terms('event_type', 'hide_empty=0');
 
-						if ($instance['filter_type'] == 'not-filtered') {
-							echo "<option class='theme-option' value='not-filtered' selected='selected'>".__('all event types', 'tdih')."</option>\n";
-						} else {
-							echo "<option class='theme-option' value='not-filtered'>".__('all event types', 'tdih')."</option>\n";
-						}
-						if ($instance['filter_type'] == '') {
-							echo "<option class='theme-option' value='' selected='selected'>".__('none', 'tdih')."</option>\n";
-						} else {
-							echo "<option class='theme-option' value=''>".__('none', 'tdih')."</option>\n";
-						}
+						echo "<option class='theme-option' value='not-filtered'";
+						if ($instance['filter_type'] == 'not-filtered') { echo " selected='selected'"; }
+						echo">".__('All event types', 'this-day-in-history')."</option>";
+
+						echo "<option class='theme-option' value=''";
+						if ($instance['filter_type'] == '') { echo " selected='selected'"; }
+						echo ">".__('No event type', 'this-day-in-history')."</option>";
 
 						if (count($event_types) > 0) {
 							foreach ($event_types as $event_type) {
-								if ($event_type->slug == $instance['filter_type']) {
-									echo "<option class='theme-option' value='" . $event_type->slug . "' selected='selected'>" . $event_type->name . "</option>\n";
-								} else {
-									echo "<option class='theme-option' value='" . $event_type->slug . "'>" . $event_type->name . "</option>\n";
-								}
+
+									echo "<option class='theme-option' value='" . $event_type->slug . "'";
+									if ($event_type->slug == $instance['filter_type']) { echo " selected='selected'"; }
+									echo ">" . $event_type->name . "</option>";
 							}
 						}
 					?>
@@ -123,6 +117,6 @@ class ThisDayInHistoryWidget extends WP_Widget {
 	}
 }
 
-add_action('widgets_init', create_function('', 'return register_widget("ThisDayInHistoryWidget");'));
+add_action('widgets_init', create_function('', 'return register_widget("this_day_in_history_widget");'));
 
 ?>

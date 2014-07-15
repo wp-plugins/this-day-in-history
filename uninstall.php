@@ -26,8 +26,10 @@ if (!defined('WP_UNINSTALL_PLUGIN') || !WP_UNINSTALL_PLUGIN || dirname(WP_UNINST
 	// Remove the event posts
 	$result = $wpdb->query("DELETE FROM ".$wpdb->prefix."posts WHERE post_type='tdih_event'");
 
-	// Delete the options
+	// Delete the db version if it exists (not used since verion 1.0)
 	delete_option("tdih_db_version");
+
+	// Delete the options
 	delete_option("tdih_options");
 
 	// Remove the capacity

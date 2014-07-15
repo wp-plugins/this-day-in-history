@@ -28,11 +28,9 @@ class tdih_init {
 	}
 
 	private function tdih_activate() {
-		global $wpdb, $tdih_db_version;
+		global $wpdb;
 
-		add_option('tdih_db_version', $tdih_db_version);
-
-		add_option('tdih_options', array('date_format'=>'%Y-%m-%d', 'per_page' => '10', 'no_events'=>'No Events'));
+		add_option('tdih_options', array('date_format'=>'%Y-%m-%d', 'no_events'=>'No Events'));
 
 		$role = get_role('administrator');
 
