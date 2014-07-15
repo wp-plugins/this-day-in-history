@@ -44,7 +44,7 @@ require_once(plugin_dir_path(__FILE__).'/tdih-widget.php');
 require_once(plugin_dir_path(__FILE__).'/tdih-list-table.class.php');
 
 
-/* Add plugin CSS to the admin and site */
+/* Add plugin CSS for the widget and shortcode */
 
 function load_tdih_styles(){
 	wp_register_style('this-day-in-history', plugin_dir_url(__FILE__).'tdih.css');
@@ -52,14 +52,6 @@ function load_tdih_styles(){
 }
 
 add_action('wp_enqueue_scripts', 'load_tdih_styles');
-
-function load_tdih_admin_styles($hook_suffix) {
-	if ($hook_suffix = 'this-day-in-history') {
-		wp_enqueue_style('this-day-in-history', plugin_dir_url(__FILE__).'tdih.css');
-	}
-}
-
-add_action('admin_enqueue_scripts', 'load_tdih_admin_styles');
 
 
 /* Add historic event item to the Admin Bar "New" drop down */
@@ -86,7 +78,8 @@ function tdih_add_menu() {
 	global $tdih_events;
 
 	$tdih_events = add_object_page(__('This Day In History', 'this-day-in-history'), __('Historic Events', 'this-day-in-history'), 'manage_tdih_events', 'this-day-in-history', 'tdih_events', 'dashicons-backup');
-	add_action("load-$tdih_events", 'tdih_screen_options');
+	add_action('load-'.$tdih_events, 'tdih_screen_options');
+	add_action('load-'.$tdih_events, 'tdih_load_admin_css');
 }
 
 add_action('admin_menu', 'tdih_add_menu');
@@ -254,6 +247,16 @@ function tdih_set_option($status, $option, $value) {
 
 add_filter('set-screen-option', 'tdih_set_option', 10, 3);
 
+
+/* Load the admin css only on the tdih pages */
+
+function tdih_load_admin_css(){
+	add_action('admin_enqueue_scripts', 'tdih_enqueue_styles');
+}
+
+function tdih_enqueue_styles() {
+	wp_enqueue_style('this-day-in-history', plugin_dir_url(__FILE__).'tdih.css');
+}
 
 /* Display main admin screen */
 
