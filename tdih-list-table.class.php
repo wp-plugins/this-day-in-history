@@ -19,6 +19,8 @@ class TDIH_List_Table extends WP_List_Table {
 
 		$this->date_format = $options['date_format'];
 
+		$this->date_order = $options['date_order'];
+
 		$this->date_description = $this->tdih_date();
 
 		$this->per_page = $this->get_items_per_page('events_per_page', 10);
@@ -47,15 +49,16 @@ class TDIH_List_Table extends WP_List_Table {
 			'edit'   => sprintf('<a href="?page=%s&action=%s&id=%s">Edit</a>', $_REQUEST['page'], 'edit', $item->ID),
 			'delete' => sprintf('<a href="?page=%s&action=%s&id=%s">Delete</a>', $_REQUEST['page'], 'delete', $item->ID),
 		);
-
 		return sprintf('%1$s %2$s', $item->event_date, $this->row_actions($actions));
 	}
 
 	public function column_cb($item){
+
 		return sprintf('<input type="checkbox" name="%1$s[]" value="%2$s" />', $this->_args['singular'], $item->ID);
 	}
 
 	public function get_columns(){
+
 		$columns = array(
 			'cb'         => '<input type="checkbox" />',
 			'event_date' => 'Event Date',
@@ -66,8 +69,8 @@ class TDIH_List_Table extends WP_List_Table {
 	}
 
 	public function get_hidden_columns(){
+
 		$columns = (array) get_user_option('manage_tdih_event-menucolumnshidden');
-		print_r($columns);
 		return $columns;
 	}
 
@@ -83,14 +86,12 @@ class TDIH_List_Table extends WP_List_Table {
 
 	public function get_bulk_actions() {
 
-		$actions = array(
-			'bulk_delete' => 'Delete'
-		);
+		$actions = array('bulk_delete' => 'Delete');
 		return $actions;
 	}
 
  	public function no_items() {
-		_e('No historic dates have been found.', 'this-day-in-history');
+		_e('No historic events have been found.', 'this-day-in-history');
 	}
 
 	private function process_bulk_action() {
@@ -229,7 +230,7 @@ class TDIH_List_Table extends WP_List_Table {
 			break;
 
 			default:
-			// nowt
+				// nowt
 			break;
 		}
 	}
@@ -252,7 +253,10 @@ class TDIH_List_Table extends WP_List_Table {
 	private function date_check($date) {
 
 		if (preg_match("/^(\d{4})-(\d{2})-(\d{2})$/", $date, $matches)) {
-			if (checkdate($matches[2], $matches[3], $matches[1])) {
+
+			$matches[1] == '0000' ? $year = '2000' : $year = $matches[1];
+
+			if (checkdate($matches[2], $matches[3], $year)) {
 				return true;
 			}
 		}
@@ -261,6 +265,7 @@ class TDIH_List_Table extends WP_List_Table {
 	}
 
 	private function date_reorder($date) {
+
 
 		switch ($this->date_format) {
 
@@ -284,16 +289,16 @@ class TDIH_List_Table extends WP_List_Table {
 
 		switch ($this->date_format) {
 
-		case '%m-%d-%Y':
-					$format = 'MM-DD-YYYY';
-					break;
+			case '%m-%d-%Y':
+				$format = 'MM-DD-YYYY';
+				break;
 
-		case '%d-%m-%Y':
-					$format = 'DD-MM-YYYY';
-					break;
+			case '%d-%m-%Y':
+				$format = 'DD-MM-YYYY';
+				break;
 
-		default:
-					$format = 'YYYY-MM-DD';
+			default:
+				$format = 'YYYY-MM-DD';
 		}
 
 		return $format;
@@ -305,14 +310,12 @@ class TDIH_List_Table extends WP_List_Table {
 
 		$term_list = '';
 
-				if ($terms != '') {
-					foreach ($terms as $term) {
-						$term_list .= $term->name . ', ';
-					}
-				} else {
-					$term_list = __('none', 'this-day-in-history');
-			}
-			$term_list = trim($term_list, ', ');
+		if ($terms != '') {
+			foreach ($terms as $term) { $term_list .= $term->name . ', '; }
+		} else {
+			$term_list = __('none', 'this-day-in-history');
+		}
+		$term_list = trim($term_list, ', ');
 
 		return $term_list;
 	}
@@ -337,13 +340,13 @@ class TDIH_List_Table extends WP_List_Table {
 				$orderby = 'ORDER BY p.post_content ';
 				break;
 			case 'event_date':
-				$orderby = 'ORDER BY p.post_title ' ;
+				$orderby = "ORDER BY DATE_FORMAT(p.post_title, '".$this->date_order."') " ;
 				break;
 			case 'event_type':
 				$orderby = 'ORDER BY ts.name ';
 				break;
 			default:
-				$orderby = 'ORDER BY p.post_title ';
+				$orderby = "ORDER BY DATE_FORMAT(p.post_title, '".$this->date_order."') ";
 		}
 
 		$order = empty($_REQUEST['order']) ? 'ASC' : $_REQUEST['order'];
