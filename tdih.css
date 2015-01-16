@@ -1,0 +1,15 @@
+/*
+  This Day In History Plugin CSS
+*/
+
+.column-event_date { width: 20%; }
+
+.column-event_name { width: 90% }
+
+.column-event_type { width: 20%; }
+
+.tdih_edit_event { width: 50%; }
+
+.tdih_event_type { font-weight: bold; list-style-type: none; }
+
+.tdih_none { opacity: 0.5; }
