@@ -31,7 +31,7 @@ Installing is pretty easy takes only a minute or two.
 
 == Changelog ==
 
-= 2.0
+= 2.0 =
 * The shortcode table date format is set via the TDIH option (bug fix)
 * Updated shortcode help screen to remove commas from the example (bug fix)
 * Split the shortcode into two (tdih) like the widget and (tdih_tab) table format
