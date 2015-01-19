@@ -6,29 +6,33 @@ Tested up to: 4.1
 Stable tag: 2.0
 License: GPLv2 or later
 
-This is a This Day In History management plugin and widget which you can use to enter and display historic events.
+Manage different kinds of historical events that you then display in via a This Day In History widget or shortcodes.
 
 
 == Description ==
 
 This plugin allows you to enter and manage different kinds of historical events that you then display in via a This Day In History widget or shortcodes.
 
-This plugin requires php 5.3.0 or higher.
+You can enter, edit or delete historical or, if you wish future, events via the simple administration page which also lists the events that you have entered.  You can, of course, both filter and sort the list.
+
+The events are displayed via an included widget or one of the two shortcodes.  Events are shown chronologically by year if they fall on the same day and month of the period you have selected (normally the current date).
+
+Optionally you can create event types and assign a type to an event.  Events can then be shown and filtered by event type in both the administration screen, widget and shortcodes.
+
+**This plugin requires php 5.3.0 or higher.**
 
 
 == Installation ==
 
 Installing is pretty easy takes only a minute or two.
 
-1. Upload 'this-day-in-history' directory to your '/wp-content/plugins/' directory.
+1. Upload `this-day-in-history` directory to your `/wp-content/plugins/` directory.
 
-2. Activate the plugin through the 'Plugins' screen in WordPress.
+2. Activate the plugin through the Plugins screen in WordPress.
 
-3. On the 'Widgets' sub-menu of 'Appearance' you will find a new widget type called 'This Day In History'.
+3. On the Widgets sub-menu of Appearance you will find a new widget type called This Day In History.
 
-4. Add this widget, to your themes widget display areas, select a title and click Save.
-
-5. Enter historic events via the new 'Historic Events' admin page.  These will be automatically displayed by the widget on the anniversary of the day that they occurred.
+4. You can also use the `[tdih]` and `[tdih_tab]` shortcodes on any page or post.
 
 
 == Changelog ==
@@ -111,44 +115,44 @@ For version 2.0 the shortcode has been completely redesigned and split into two 
 
 = tdih =
 
-You can add a tdih shortcode to any post or page to display a list of events as per the widget.
+You can add a `[tdih]` shortcode to any post or page to display a list of events as per the widget.
 
 There are four optional attributes for this shortcode
 
-* show_type (1 or 0) - 1 shows event types (default) and 0 does not.
-* show_year (1 or 0) - 1 shows the year of the event (default) and 0 does not.
-* type - enter a type to show only that type. Shows all types by default.
-* period (t, m, y) - t shows events for today (default), m for tomorrow and y for yesterday.
+* `show_type` (1 or 0) - 1 shows event types (default) and 0 does not.
+* `show_year` (1 or 0) - 1 shows the year of the event (default) and 0 does not.
+* `type` - enter a type to show only that type. Shows all types by default.
+* `period` (t, m, y) - t shows events for today (default), m for tomorrow and y for yesterday.
 
 Example use:
 
-* [tdih] - This shows year and event types for all event types for todays events.
-* [tdih show_type=0 type=birth] - This shows year and event but not type for the event type (slug) of birth.
+* `[tdih]` - This shows year and event types for all event types for todays events.
+* `[tdih show_type=0 type=birth]` - This shows year and event but not type for the event type (slug) of birth.
 
 = tdih_tab =
 
-You can add a tdih_tab shortcode to any post or page to display a table of events.
+You can add a `[tdih_tab]` shortcode to any post or page to display a table of events.
 
 There are nine optional attributes for this shortcode:
 
-* show_type (1 or 0) - 1 shows event types (default) and 0 does not.
-* show_year (1 or 0) - 1 shows the year of the event (default) and 0 does not.
-* show_head (1 or 0) - 1 shows the year of the event (default) and 0 does not.
-* type enter a type to show only events of that type. Shows all types by default.
-* day (1-31) - enter a day to show only events on that day. Shows all days by default.
-* month (1-12) - enter a month to show only events in that month. Shows all months by default.
-* year (0001-9999) - enter a year to show only events in that year. Shows all years by default.
-* period (t, m, y) - t shows events for today, m for tomorrow and y for yesterday. Shows all events by default.
-* classes - enter one or more space separated classes which will be added to the table tag.
+* `show_type` (1 or 0) - 1 shows event types (default) and 0 does not.
+* `show_year` (1 or 0) - 1 shows the year of the event (default) and 0 does not.
+* `show_head` (1 or 0) - 1 shows the year of the event (default) and 0 does not.
+* `type` - enter a type to show only events of that type. Shows all types by default.
+* `day` (1-31) - enter a day to show only events on that day. Shows all days by default.
+* `month` (1-12) - enter a month to show only events in that month. Shows all months by default.
+* `year` (0001-9999) - enter a year to show only events in that year. Shows all years by default.
+* `period` (t, m, y) - t shows events for today, m for tomorrow and y for yesterday. Shows all events by default.
+* `classes` - enter one or more space separated classes which will be added to the table tag.
 
 NB:
 
-* Setting period will override and values for day, month and year.
-* day, month and year can be combined.
-* year=0 will display events with no year
+* Setting `period` will override and values for `day`, `month` and `year`.
+* `day`, `month` and `year` can be combined.
+* `year=0` will display events with no year
 
 Example use:
 
-* [tdih_tab] - This shows a full list of events in date order and includes the event type.
-* [tdih_tab show_types=0 type=birth classes='content dark'] - This shows events but not type for the event type (slug) of birth. " content dark" will be added to the table's class.
-* [tdih_tab day=20 month=8] - This shows events on 20th August in any year.
+* `[tdih_tab]` - This shows a full list of events in date order and includes the event type.
+* `[tdih_tab show_types=0 type=birth classes='content dark']` - This shows events but not type for the event type (slug) of birth. " content dark" will be added to the table's class.
+* `[tdih_tab day=20 month=8]` - This shows events on 20th August in any year.
