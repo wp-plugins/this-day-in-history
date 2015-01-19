@@ -11,7 +11,9 @@ This is a This Day In History management plugin and widget which you can use to 
 
 == Description ==
 
-This Plugin allows you to enter and manage different kinds of historical events that you then display in via a This Day In History widget or shortcodes.
+This plugin allows you to enter and manage different kinds of historical events that you then display in via a This Day In History widget or shortcodes.
+
+This plugin requires php 5.3.0 or higher.
 
 
 == Installation ==
