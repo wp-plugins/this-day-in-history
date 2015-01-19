@@ -27,13 +27,9 @@ Optionally you can create event types and assign a type to an event.  Events can
 Installing is pretty easy takes only a minute or two.
 
 1. Upload `this-day-in-history` directory to your `/wp-content/plugins/` directory.
-
-2. Activate the plugin through the Plugins screen in WordPress.
-
-3. On the Widgets sub-menu of Appearance you will find a new widget type called This Day In History.
-
-4. You can also use the `[tdih]` and `[tdih_tab]` shortcodes on any page or post.
-
+1. Activate the plugin through the Plugins screen in WordPress.
+1. On the Widgets sub-menu of Appearance you will find a new widget type called This Day In History.
+1. You can also use the `[tdih]` and `[tdih_tab]` shortcodes on any page or post.
 
 == Changelog ==
 
@@ -108,6 +104,11 @@ Installing is pretty easy takes only a minute or two.
 = 0.1 =
 
 * Initial Release
+
+== Upgrade Notice ==
+
+= 2.0 =
+The `[tdih]` shortcode has been split in to two `[thid]` and `[tdih_tab]`.  This version requires php 5.3.0 or higher.
 
 == Shortcodes ==
 
