@@ -108,7 +108,7 @@ Installing is pretty easy takes only a minute or two.
 == Upgrade Notice ==
 
 = 2.0 =
-The `[tdih]` shortcode has been split in to two `[thid]` and `[tdih_tab]`.  This version requires php 5.3.0 or higher.
+The [tdih] shortcode has been split in to two [thid] and [tdih_tab].  This version requires php 5.3.0 or higher.
 
 == Shortcodes ==
 
